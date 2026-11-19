@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
  * 照海報畫的裝飾星星：黃色四角閃光星、黃色五角星、淡藍色小閃光星、黃色音符。
  * 全部固定在畫面上（不跟著捲動）：
  * - SkyStars：標題附近，放在節目表後面
+ * - TitleStars：夾在「節目表」兩側，放在最上層
  * - PlanetStars：圍著行星，跟行星一起放在最上層
  */
 
@@ -12,9 +13,10 @@ type Kind = "sparkle" | "star" | "note";
 type Deco = {
   kind: Kind;
   color: "yellow" | "blue";
-  /** 位置（CSS 長度，% 是相對於所在的區塊） */
-  left: string;
-  top: string;
+  /** 位置（CSS 長度，% 是相對於所在的區塊）；有 position 時改用 position 的 Tailwind class */
+  left?: string;
+  top?: string;
+  position?: string;
   size: number;
   /** 旋轉角度，讓星星不要排得太工整 */
   rotate?: number;
@@ -35,7 +37,6 @@ const SKY: Deco[] = [
   { kind: "sparkle", color: "yellow", left: "7%", top: "22px", size: 27, rotate: 12, duration: 4.3, delay: 0 },
   { kind: "sparkle", color: "blue", left: "13%", top: "78px", size: 9, duration: 3.1, delay: 1.9 },
   { kind: "note", color: "yellow", left: "19%", top: "47px", size: 25, rotate: -14, duration: 5.7, delay: 1.1, desktopOnly: true },
-  { kind: "star", color: "yellow", left: "4%", top: "131px", size: 17, rotate: -18, duration: 4.9, delay: 0.5 },
   { kind: "sparkle", color: "yellow", left: "27%", top: "143px", size: 11, rotate: 30, duration: 5.3, delay: 2.7, desktopOnly: true },
   { kind: "sparkle", color: "blue", left: "33%", top: "19px", size: 13, duration: 3.9, delay: 0.7, desktopOnly: true },
   { kind: "sparkle", color: "yellow", left: "16%", top: "214px", size: 15, rotate: -8, duration: 4.1, delay: 3.3, desktopOnly: true },
@@ -45,9 +46,14 @@ const SKY: Deco[] = [
   { kind: "star", color: "yellow", left: "89%", top: "14px", size: 23, rotate: 9, duration: 5.1, delay: 2.5 },
   { kind: "sparkle", color: "yellow", left: "86%", top: "104px", size: 31, rotate: -6, duration: 4.7, delay: 0.2, desktopOnly: true },
   { kind: "sparkle", color: "blue", left: "95%", top: "72px", size: 8, duration: 3.3, delay: 1.6 },
-  { kind: "note", color: "yellow", left: "93%", top: "163px", size: 22, rotate: -10, duration: 5.9, delay: 3.6 },
   { kind: "sparkle", color: "yellow", left: "76%", top: "187px", size: 12, rotate: 40, duration: 4.4, delay: 2.9, desktopOnly: true },
   { kind: "star", color: "yellow", left: "67%", top: "232px", size: 13, rotate: 24, duration: 5.5, delay: 1.2, desktopOnly: true },
+];
+
+// 夾在「節目表」三個字左右兩側（位置對齊 page.tsx 標題區：手機文字中心約 128px、電腦約 148px）
+const FLANK: Deco[] = [
+  { kind: "star", color: "yellow", position: "left-[calc(50%-44px)] top-[128px] sm:top-[148px]", size: 17, rotate: -18, duration: 4.9, delay: 0.5 },
+  { kind: "note", color: "yellow", position: "left-[calc(50%+44px)] top-[128px] sm:top-[148px]", size: 22, rotate: -10, duration: 5.9, delay: 3.6 },
 ];
 
 // 行星周圍（% 相對於行星圖片的範圍，可超出去）
@@ -95,8 +101,8 @@ function Decos({ items }: { items: Deco[] }) {
       {items.map((d, i) => {
         const { fill, glow } = COLORS[d.color];
         const style: CSSProperties = {
-          left: d.left,
-          top: d.top,
+          left: d.position ? undefined : d.left,
+          top: d.position ? undefined : d.top,
           width: d.size,
           height: d.size,
           rotate: d.rotate ? `${d.rotate}deg` : undefined,
@@ -109,7 +115,7 @@ function Decos({ items }: { items: Deco[] }) {
             key={i}
             viewBox="0 0 24 24"
             style={style}
-            className={`twinkle absolute -translate-x-1/2 -translate-y-1/2 ${d.desktopOnly ? "hidden sm:block" : ""}`}
+            className={`twinkle absolute -translate-x-1/2 -translate-y-1/2 ${d.position ?? ""} ${d.desktopOnly ? "hidden sm:block" : ""}`}
           >
             <Shape kind={d.kind} fill={fill} />
           </svg>
@@ -124,6 +130,15 @@ export function SkyStars() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-0 h-64 select-none">
       <Decos items={SKY} />
+    </div>
+  );
+}
+
+/** 「節目表」兩側的星星：固定在畫面上（不跟著捲動），放在最上層 */
+export function TitleStars() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-20 h-64 select-none">
+      <Decos items={FLANK} />
     </div>
   );
 }

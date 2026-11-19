@@ -1,6 +1,6 @@
 import Image from "next/image";
 import ProgramViewer from "@/components/ProgramViewer";
-import { PlanetStars, SkyStars } from "@/components/Stars";
+import { PlanetStars, SkyStars, TitleStars } from "@/components/Stars";
 import { getProgram } from "@/lib/program";
 
 export default async function Home() {
@@ -20,6 +20,7 @@ export default async function Home() {
       />
       <SkyStars />
       <PlanetStars />
+      <TitleStars />
       <main className="relative z-10 mx-auto w-full max-w-6xl px-4 pt-10 pb-[calc(20svh+80px)] sm:px-6 sm:pt-14 sm:pb-60">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">一起找尋自己的行星</h1>
