@@ -121,7 +121,7 @@ function Text({ value }: { value: string }) {
 function ItemCard({ row, query }: { row: Row; query: string }) {
   const { item } = row;
   return (
-    <li className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+    <li className="rounded-2xl border border-white/10 bg-[#0d1330]/80 backdrop-blur-sm p-4">
       <div className="flex flex-wrap items-center gap-2">
         <SessionBadge label={row.sessionLabel} />
         {item.code && <span className="font-mono text-sm text-slate-400">{item.code}</span>}
@@ -149,7 +149,7 @@ function ItemCard({ row, query }: { row: Row; query: string }) {
 function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
   const showSession = rows.some((r) => r.sessionLabel);
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d1330]/80 backdrop-blur-sm">
       <table className="w-full text-left text-sm">
         <thead className="bg-white/[0.06] text-xs tracking-wider text-slate-300">
           <tr>
@@ -210,7 +210,7 @@ function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
 
 function EmptyMessage({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-12 text-center text-slate-300">
+    <p className="rounded-2xl border border-white/10 bg-[#0d1330]/80 backdrop-blur-sm px-6 py-12 text-center text-slate-300">
       {children}
     </p>
   );

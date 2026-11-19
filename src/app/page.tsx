@@ -1,3 +1,4 @@
+import Image from "next/image";
 import ProgramViewer from "@/components/ProgramViewer";
 import { getProgram } from "@/lib/program";
 
@@ -5,13 +6,25 @@ export default async function Home() {
   const sessions = await getProgram();
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-      <header className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-white sm:text-4xl">一起找尋自己的行星</h1>
-        <p className="mt-3 text-sm tracking-[0.3em] text-amber-200/80">2026樂果音樂會</p>
-        <p className="mt-2 text-slate-400">節目表</p>
-      </header>
-      <ProgramViewer sessions={sessions} />
-    </main>
+    <>
+      {/* 右下角裝飾行星（取自海報），固定在畫面上、放在內容後面且不擋點擊 */}
+      <Image
+        src="/planet.webp"
+        alt=""
+        aria-hidden
+        width={541}
+        height={415}
+        priority
+        className="pointer-events-none fixed bottom-0 right-0 z-0 w-40 select-none opacity-35 sm:w-[280px] sm:opacity-55"
+      />
+      <main className="relative z-10 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-white sm:text-4xl">一起找尋自己的行星</h1>
+          <p className="mt-3 text-sm tracking-[0.3em] text-amber-200/80">2026樂果音樂會</p>
+          <p className="mt-2 text-slate-400">節目表</p>
+        </header>
+        <ProgramViewer sessions={sessions} />
+      </main>
+    </>
   );
 }
