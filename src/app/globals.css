@@ -15,7 +15,7 @@
 body {
   color: var(--foreground);
   font-family: var(--font-sans);
-  /* 星空背景：主題「一起找尋行星」 */
+  /* 星空背景：主題「一起找尋自己的行星」 */
   background-color: var(--background);
   background-image:
     radial-gradient(1px 1px at 20% 30%, rgb(255 255 255 / 0.7), transparent),

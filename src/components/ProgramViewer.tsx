@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { ProgramItem, Session } from "@/lib/program";
+
+/** 畫面上的一列節目；搜尋時會帶上場次名稱（午場／晚場） */
+type Row = { item: ProgramItem; sessionLabel?: string };
 
 const PLANET_COLORS: Record<string, string> = {
   水星: "bg-stone-400/20 text-stone-200 ring-stone-300/40",
@@ -28,6 +31,15 @@ function PlanetBadge({ planet }: { planet: string | null }) {
   );
 }
 
+function SessionBadge({ label }: { label?: string }) {
+  if (!label) return null;
+  return (
+    <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white ring-1 ring-inset ring-white/25">
+      {label}
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: ProgramItem["status"] }) {
   if (status === "confirmed") {
     return (
@@ -46,8 +58,51 @@ function StatusBadge({ status }: { status: ProgramItem["status"] }) {
   return null;
 }
 
-function Lines({ values, fallback = "—" }: { values: string[]; fallback?: string }) {
-  if (values.length === 0) return <span className="text-slate-500">{fallback}</span>;
+/** 把姓名中符合搜尋字的部分加上黃底 */
+function Highlight({ text, query }: { text: string; query: string }) {
+  const index = query ? text.indexOf(query) : -1;
+  if (index < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, index)}
+      <mark className="rounded bg-amber-300 px-0.5 text-slate-900">
+        {text.slice(index, index + query.length)}
+      </mark>
+      {text.slice(index + query.length)}
+    </>
+  );
+}
+
+function Performers({
+  names,
+  query,
+  inline = false,
+}: {
+  names: string[];
+  query: string;
+  inline?: boolean;
+}) {
+  if (names.length === 0) return <span className="text-slate-500">—</span>;
+  return (
+    <>
+      {names.map((name, i) =>
+        inline ? (
+          <span key={i}>
+            {i > 0 && "、"}
+            <Highlight text={name} query={query} />
+          </span>
+        ) : (
+          <span key={i} className="block">
+            <Highlight text={name} query={query} />
+          </span>
+        ),
+      )}
+    </>
+  );
+}
+
+function Lines({ values }: { values: string[] }) {
+  if (values.length === 0) return <span className="text-slate-500">—</span>;
   return (
     <>
       {values.map((v, i) => (
@@ -63,10 +118,12 @@ function Text({ value }: { value: string }) {
   return value ? <>{value}</> : <span className="text-slate-500">—</span>;
 }
 
-function ItemCard({ item }: { item: ProgramItem }) {
+function ItemCard({ row, query }: { row: Row; query: string }) {
+  const { item } = row;
   return (
     <li className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
       <div className="flex flex-wrap items-center gap-2">
+        <SessionBadge label={row.sessionLabel} />
         {item.code && <span className="font-mono text-sm text-slate-400">{item.code}</span>}
         <PlanetBadge planet={item.planet} />
         <StatusBadge status={item.status} />
@@ -75,7 +132,7 @@ function ItemCard({ item }: { item: ProgramItem }) {
         {item.piece || <span className="text-slate-500">曲目待定</span>}
       </p>
       <p className="mt-1 text-base text-slate-200">
-        {item.performers.length ? item.performers.join("、") : "—"}
+        <Performers names={item.performers} query={query} inline />
         {item.grades.length > 0 && (
           <span className="ml-2 text-sm text-slate-400">{item.grades.join("、")}</span>
         )}
@@ -89,12 +146,14 @@ function ItemCard({ item }: { item: ProgramItem }) {
   );
 }
 
-function ItemTable({ items }: { items: ProgramItem[] }) {
+function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
+  const showSession = rows.some((r) => r.sessionLabel);
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10">
       <table className="w-full text-left text-sm">
         <thead className="bg-white/[0.06] text-xs tracking-wider text-slate-300">
           <tr>
+            {showSession && <th className="px-4 py-3 font-medium">場次</th>}
             <th className="px-4 py-3 font-medium">編號</th>
             <th className="px-4 py-3 font-medium">行星</th>
             <th className="px-4 py-3 font-medium">演出者</th>
@@ -107,8 +166,13 @@ function ItemTable({ items }: { items: ProgramItem[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-white/10">
-          {items.map((item, i) => (
+          {rows.map(({ item, sessionLabel }, i) => (
             <tr key={i} className="align-top transition-colors hover:bg-white/[0.04]">
+              {showSession && (
+                <td className="whitespace-nowrap px-4 py-3">
+                  <SessionBadge label={sessionLabel} />
+                </td>
+              )}
               <td className="whitespace-nowrap px-4 py-3 font-mono text-slate-400">
                 {item.code ?? "—"}
               </td>
@@ -116,7 +180,7 @@ function ItemTable({ items }: { items: ProgramItem[] }) {
                 <PlanetBadge planet={item.planet} />
               </td>
               <td className="whitespace-nowrap px-4 py-3 font-medium text-white">
-                <Lines values={item.performers} />
+                <Performers names={item.performers} query={query} />
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-slate-300">
                 <Lines values={item.grades} />
@@ -144,13 +208,35 @@ function ItemTable({ items }: { items: ProgramItem[] }) {
   );
 }
 
+function EmptyMessage({ children }: { children: ReactNode }) {
+  return (
+    <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-12 text-center text-slate-300">
+      {children}
+    </p>
+  );
+}
+
 export default function ProgramViewer({ sessions }: { sessions: Session[] }) {
   const [key, setKey] = useState(sessions[0]?.key);
+  const [search, setSearch] = useState("");
   const session = sessions.find((s) => s.key === key) ?? sessions[0];
+  const query = search.trim();
+
+  // 有搜尋字時同時搜尋午場和晚場，每筆標上場次；沒有時只顯示選的場次
+  const rows: Row[] = query
+    ? sessions.flatMap((s) =>
+        s.items
+          .filter((item) => item.performers.some((name) => name.includes(query)))
+          .map((item) => ({ item, sessionLabel: s.label })),
+      )
+    : (session?.items ?? []).map((item) => ({ item }));
+
+  const allFailed = sessions.every((s) => s.failed);
+  const notReady = query ? allFailed : !session || session.failed || session.items.length === 0;
 
   return (
     <section>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1.5">
           <span className="text-sm text-slate-400">選擇場次</span>
           <div className="relative">
@@ -173,25 +259,51 @@ export default function ProgramViewer({ sessions }: { sessions: Session[] }) {
             </span>
           </div>
         </label>
-        {session && !session.failed && (
-          <p className="text-sm text-slate-400">共 {session.items.length} 個節目</p>
+
+        <label className="flex min-w-0 flex-1 flex-col gap-1.5 sm:max-w-xs">
+          <span className="text-sm text-slate-400">搜尋演出者</span>
+          <div className="relative">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="輸入小朋友姓名"
+              className="w-full appearance-none rounded-xl border border-white/15 bg-slate-900 py-2.5 pl-4 pr-10 text-base text-white outline-none placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-amber-300 [&::-webkit-search-cancel-button]:hidden"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="清除搜尋"
+                className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </label>
+
+        {!notReady && (
+          <p className="ml-auto text-sm text-slate-400">
+            {query ? `找到 ${rows.length} 個節目` : `共 ${rows.length} 個節目`}
+          </p>
         )}
       </div>
 
       <div className="mt-5">
-        {!session || session.failed || session.items.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-12 text-center text-slate-300">
-            節目表準備中，請稍後再來看看 ✨
-          </p>
+        {notReady ? (
+          <EmptyMessage>節目表準備中，請稍後再來看看 ✨</EmptyMessage>
+        ) : rows.length === 0 ? (
+          <EmptyMessage>找不到「{query}」，請確認姓名是否正確</EmptyMessage>
         ) : (
           <>
             <ol className="space-y-3 md:hidden">
-              {session.items.map((item, i) => (
-                <ItemCard key={i} item={item} />
+              {rows.map((row, i) => (
+                <ItemCard key={i} row={row} query={query} />
               ))}
             </ol>
             <div className="hidden md:block">
-              <ItemTable items={session.items} />
+              <ItemTable rows={rows} query={query} />
             </div>
           </>
         )}
