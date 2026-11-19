@@ -27,3 +27,19 @@ body {
   background-size: 300px 300px, 400px 400px, 500px 500px, 350px 350px, 450px 450px, 100% 100%;
   background-attachment: fixed;
 }
+
+/* 裝飾星星慢慢閃爍（Stars.tsx 會個別設定秒數與延遲） */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.45; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.twinkle {
+  animation: twinkle 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twinkle {
+    animation: none;
+  }
+}
