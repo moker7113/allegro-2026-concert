@@ -1,20 +1,27 @@
 import type { CSSProperties } from "react";
 
-/** 照海報畫的裝飾星星：黃色四角閃光星、黃色五角星、淡藍色小閃光星、黃色音符 */
+/**
+ * 照海報畫的裝飾星星：黃色四角閃光星、黃色五角星、淡藍色小閃光星、黃色音符。
+ * 全部固定在畫面上（不跟著捲動）：
+ * - SkyStars：標題附近，放在節目表後面
+ * - PlanetStars：圍著行星，跟行星一起放在最上層
+ */
 
 type Kind = "sparkle" | "star" | "note";
 
 type Deco = {
   kind: Kind;
   color: "yellow" | "blue";
-  /** 水平位置（%）與距離頂端的高度（px） */
+  /** 位置（CSS 長度，% 是相對於所在的區塊） */
   left: string;
-  top: number;
+  top: string;
   size: number;
+  /** 旋轉角度，讓星星不要排得太工整 */
+  rotate?: number;
   /** 閃爍一輪的秒數與延遲，讓每顆星錯開 */
   duration: number;
   delay: number;
-  /** 手機上隱藏（避免壓到標題文字） */
+  /** 手機上隱藏（畫面窄，避免太擠） */
   desktopOnly?: boolean;
 };
 
@@ -23,22 +30,34 @@ const COLORS = {
   blue: { fill: "#B5E8FF", glow: "rgb(150 220 255 / 0.7)" },
 };
 
-const DECOS: Deco[] = [
-  // 左側
-  { kind: "sparkle", color: "yellow", left: "6%", top: 14, size: 26, duration: 4.2, delay: 0 },
-  { kind: "note", color: "yellow", left: "16%", top: 36, size: 28, duration: 5.6, delay: 1.2, desktopOnly: true },
-  { kind: "star", color: "yellow", left: "8%", top: 112, size: 20, duration: 4.8, delay: 0.6 },
-  { kind: "sparkle", color: "blue", left: "2%", top: 176, size: 14, duration: 3.6, delay: 2.1, desktopOnly: true },
-  { kind: "sparkle", color: "blue", left: "24%", top: 128, size: 12, duration: 4.4, delay: 1.7, desktopOnly: true },
-  { kind: "sparkle", color: "yellow", left: "20%", top: 196, size: 14, duration: 5.2, delay: 2.8, desktopOnly: true },
-  // 右側
-  { kind: "star", color: "yellow", left: "93%", top: 22, size: 24, duration: 5, delay: 0.9 },
-  { kind: "sparkle", color: "blue", left: "78%", top: 12, size: 14, duration: 3.8, delay: 2.4, desktopOnly: true },
-  { kind: "sparkle", color: "yellow", left: "84%", top: 92, size: 30, duration: 4.6, delay: 0.3, desktopOnly: true },
-  { kind: "note", color: "yellow", left: "91%", top: 150, size: 24, duration: 6, delay: 1.5 },
-  { kind: "sparkle", color: "yellow", left: "74%", top: 168, size: 14, duration: 4, delay: 3.1, desktopOnly: true },
-  { kind: "note", color: "yellow", left: "68%", top: 40, size: 20, duration: 5.4, delay: 2.2, desktopOnly: true },
-  { kind: "sparkle", color: "blue", left: "96%", top: 210, size: 12, duration: 3.4, delay: 0.8 },
+// 標題附近：左右不對稱、大小與高度不規則
+const SKY: Deco[] = [
+  { kind: "sparkle", color: "yellow", left: "7%", top: "22px", size: 27, rotate: 12, duration: 4.3, delay: 0 },
+  { kind: "sparkle", color: "blue", left: "13%", top: "78px", size: 9, duration: 3.1, delay: 1.9 },
+  { kind: "note", color: "yellow", left: "19%", top: "47px", size: 25, rotate: -14, duration: 5.7, delay: 1.1, desktopOnly: true },
+  { kind: "star", color: "yellow", left: "4%", top: "131px", size: 17, rotate: -18, duration: 4.9, delay: 0.5 },
+  { kind: "sparkle", color: "yellow", left: "27%", top: "143px", size: 11, rotate: 30, duration: 5.3, delay: 2.7, desktopOnly: true },
+  { kind: "sparkle", color: "blue", left: "33%", top: "19px", size: 13, duration: 3.9, delay: 0.7, desktopOnly: true },
+  { kind: "sparkle", color: "yellow", left: "16%", top: "214px", size: 15, rotate: -8, duration: 4.1, delay: 3.3, desktopOnly: true },
+  { kind: "sparkle", color: "yellow", left: "61%", top: "8px", size: 10, duration: 3.5, delay: 2.2, desktopOnly: true },
+  { kind: "note", color: "yellow", left: "71%", top: "57px", size: 19, rotate: 16, duration: 6.1, delay: 0.4, desktopOnly: true },
+  { kind: "sparkle", color: "blue", left: "79%", top: "26px", size: 15, rotate: 20, duration: 4.6, delay: 1.4, desktopOnly: true },
+  { kind: "star", color: "yellow", left: "89%", top: "14px", size: 23, rotate: 9, duration: 5.1, delay: 2.5 },
+  { kind: "sparkle", color: "yellow", left: "86%", top: "104px", size: 31, rotate: -6, duration: 4.7, delay: 0.2, desktopOnly: true },
+  { kind: "sparkle", color: "blue", left: "95%", top: "72px", size: 8, duration: 3.3, delay: 1.6 },
+  { kind: "note", color: "yellow", left: "93%", top: "163px", size: 22, rotate: -10, duration: 5.9, delay: 3.6 },
+  { kind: "sparkle", color: "yellow", left: "76%", top: "187px", size: 12, rotate: 40, duration: 4.4, delay: 2.9, desktopOnly: true },
+  { kind: "star", color: "yellow", left: "67%", top: "232px", size: 13, rotate: 24, duration: 5.5, delay: 1.2, desktopOnly: true },
+];
+
+// 行星周圍（% 相對於行星圖片的範圍，可超出去）
+const AROUND_PLANET: Deco[] = [
+  { kind: "sparkle", color: "yellow", left: "6%", top: "-6%", size: 24, rotate: 8, duration: 4.5, delay: 0.6 },
+  { kind: "sparkle", color: "blue", left: "-12%", top: "28%", size: 11, duration: 3.4, delay: 2.0 },
+  { kind: "star", color: "yellow", left: "-6%", top: "86%", size: 15, rotate: -16, duration: 5.2, delay: 1.3 },
+  { kind: "sparkle", color: "blue", left: "38%", top: "-18%", size: 10, duration: 3.8, delay: 2.8, desktopOnly: true },
+  { kind: "note", color: "yellow", left: "-22%", top: "4%", size: 22, rotate: -12, duration: 6, delay: 0.1, desktopOnly: true },
+  { kind: "sparkle", color: "yellow", left: "-28%", top: "60%", size: 14, rotate: 25, duration: 4.2, delay: 3.4, desktopOnly: true },
 ];
 
 function Shape({ kind, fill }: { kind: Kind; fill: string }) {
@@ -70,16 +89,17 @@ function Shape({ kind, fill }: { kind: Kind; fill: string }) {
   );
 }
 
-export default function Stars() {
+function Decos({ items }: { items: Deco[] }) {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-60 select-none">
-      {DECOS.map((d, i) => {
+    <>
+      {items.map((d, i) => {
         const { fill, glow } = COLORS[d.color];
         const style: CSSProperties = {
           left: d.left,
           top: d.top,
           width: d.size,
           height: d.size,
+          rotate: d.rotate ? `${d.rotate}deg` : undefined,
           filter: `drop-shadow(0 0 ${Math.round(d.size / 4)}px ${glow})`,
           animationDuration: `${d.duration}s`,
           animationDelay: `${d.delay}s`,
@@ -89,12 +109,33 @@ export default function Stars() {
             key={i}
             viewBox="0 0 24 24"
             style={style}
-            className={`twinkle absolute -translate-x-1/2 ${d.desktopOnly ? "hidden sm:block" : ""}`}
+            className={`twinkle absolute -translate-x-1/2 -translate-y-1/2 ${d.desktopOnly ? "hidden sm:block" : ""}`}
           >
             <Shape kind={d.kind} fill={fill} />
           </svg>
         );
       })}
+    </>
+  );
+}
+
+/** 標題附近的星星：固定在畫面上方，放在節目表後面 */
+export function SkyStars() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-0 h-64 select-none">
+      <Decos items={SKY} />
+    </div>
+  );
+}
+
+/** 行星周圍的星星：範圍與 page.tsx 的行星一致（手機 4/5 高度靠右、電腦右下角），放在最上層 */
+export function PlanetStars() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none fixed right-0 top-4/5 z-20 aspect-[541/415] w-40 -translate-y-1/2 select-none opacity-80 sm:top-auto sm:bottom-0 sm:w-[280px] sm:translate-y-0"
+    >
+      <Decos items={AROUND_PLANET} />
     </div>
   );
 }
