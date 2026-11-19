@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "樂果2026音樂發表會",
-  description: "樂果2026音樂發表會「一起找尋自己的行星」午場、晚場節目表",
+  title: "2026樂果音樂會",
+  description: "2026樂果音樂會「一起找尋自己的行星」午場、晚場節目表",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
