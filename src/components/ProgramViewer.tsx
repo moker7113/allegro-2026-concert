@@ -118,8 +118,30 @@ function Text({ value }: { value: string }) {
   return value ? <>{value}</> : <span className="text-slate-500">—</span>;
 }
 
+/** 頒獎、中場休息等流程：置中文字，兩側細線 */
+function InterludeDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 text-sm font-medium tracking-[0.2em] text-amber-200/90">
+      <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-200/40" />
+      <span>
+        <span aria-hidden>✦ </span>
+        {label}
+        <span aria-hidden> ✦</span>
+      </span>
+      <span aria-hidden className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-200/40" />
+    </div>
+  );
+}
+
 function ItemCard({ row, query }: { row: Row; query: string }) {
   const { item } = row;
+  if (item.kind === "interlude") {
+    return (
+      <li className="py-2">
+        <InterludeDivider label={item.code ?? ""} />
+      </li>
+    );
+  }
   return (
     <li className="rounded-2xl border border-white/10 bg-[#0d1330]/80 backdrop-blur-sm p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -166,42 +188,50 @@ function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-white/10">
-          {rows.map(({ item, sessionLabel }, i) => (
-            <tr key={i} className="align-top transition-colors hover:bg-white/[0.04]">
-              {showSession && (
-                <td className="whitespace-nowrap px-4 py-3">
-                  <SessionBadge label={sessionLabel} />
+          {rows.map(({ item, sessionLabel }, i) =>
+            item.kind === "interlude" ? (
+              <tr key={i}>
+                <td colSpan={showSession ? 10 : 9} className="px-4 py-3">
+                  <InterludeDivider label={item.code ?? ""} />
                 </td>
-              )}
-              <td className="whitespace-nowrap px-4 py-3 font-mono text-slate-400">
-                {item.code ?? "—"}
-              </td>
-              <td className="whitespace-nowrap px-4 py-3">
-                <PlanetBadge planet={item.planet} />
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 font-medium text-white">
-                <Performers names={item.performers} query={query} />
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-slate-300">
-                <Lines values={item.grades} />
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-slate-300">
-                <Lines values={item.instruments} />
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-slate-300">
-                <Text value={item.form} />
-              </td>
-              <td className="px-4 py-3 text-slate-100">
-                <Text value={item.piece} />
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-slate-300">
-                <Lines values={item.teachers} />
-              </td>
-              <td className="whitespace-nowrap px-4 py-3">
-                <StatusBadge status={item.status} />
-              </td>
-            </tr>
-          ))}
+              </tr>
+            ) : (
+              <tr key={i} className="align-top transition-colors hover:bg-white/[0.04]">
+                {showSession && (
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <SessionBadge label={sessionLabel} />
+                  </td>
+                )}
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-slate-400">
+                  {item.code ?? "—"}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <PlanetBadge planet={item.planet} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 font-medium text-white">
+                  <Performers names={item.performers} query={query} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-300">
+                  <Lines values={item.grades} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-300">
+                  <Lines values={item.instruments} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-300">
+                  <Text value={item.form} />
+                </td>
+                <td className="px-4 py-3 text-slate-100">
+                  <Text value={item.piece} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-300">
+                  <Lines values={item.teachers} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <StatusBadge status={item.status} />
+                </td>
+              </tr>
+            ),
+          )}
         </tbody>
       </table>
     </div>
@@ -230,6 +260,9 @@ export default function ProgramViewer({ sessions }: { sessions: Session[] }) {
           .map((item) => ({ item, sessionLabel: s.label })),
       )
     : (session?.items ?? []).map((item) => ({ item }));
+
+  // 計數不含頒獎、中場休息等流程列
+  const performanceCount = rows.filter((r) => r.item.kind === "performance").length;
 
   const allFailed = sessions.every((s) => s.failed);
   const notReady = query ? allFailed : !session || session.failed || session.items.length === 0;
@@ -285,7 +318,7 @@ export default function ProgramViewer({ sessions }: { sessions: Session[] }) {
 
         {!notReady && (
           <p className="ml-auto text-sm text-slate-400">
-            {query ? `找到 ${rows.length} 個節目` : `共 ${rows.length} 個節目`}
+            {query ? `找到 ${performanceCount} 個節目` : `共 ${performanceCount} 個節目`}
           </p>
         )}
       </div>

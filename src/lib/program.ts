@@ -5,6 +5,8 @@ import { cacheLife } from "next/cache";
 export type ProgramStatus = "confirmed" | "pending" | null;
 
 export type ProgramItem = {
+  /** performance：一般演出；interlude：頒獎、中場休息等流程（只有 A 欄有字） */
+  kind: "performance" | "interlude";
   /** A 欄的編號，例如 "01"、"開場1"；沒有編號時為 null */
   code: string | null;
   /** 行星主題，例如 "土星" */
@@ -62,13 +64,19 @@ function toItem(row: string[]): ProgramItem | null {
   const performers = splitLines(b);
   // 整列空白就略過
   if (!a.trim() && performers.length === 0 && !f.trim()) return null;
+  const code = parseCode(a);
+  const piece = f.trim();
+  // A 欄是不含數字的文字（例如「頒獎」「中場休息」），且沒有行星、演出者、曲目 → 流程列
+  const isInterlude =
+    !!code.code && !/\d/.test(code.code) && !code.planet && performers.length === 0 && !piece;
   return {
-    ...parseCode(a),
+    kind: isInterlude ? "interlude" : "performance",
+    ...code,
     performers,
     grades: splitLines(c),
     instruments: splitLines(d),
     form: e.trim(),
-    piece: f.trim(),
+    piece,
     teachers: splitLines(g),
   };
 }
