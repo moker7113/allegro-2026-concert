@@ -50,10 +50,10 @@ const SKY: Deco[] = [
   { kind: "star", color: "yellow", left: "67%", top: "232px", size: 13, rotate: 24, duration: 5.5, delay: 1.2, desktopOnly: true },
 ];
 
-// 夾在「節目表」三個字左右兩側（位置對齊 page.tsx 標題區：手機文字中心約 128px、電腦約 148px）
+// 夾在「節目表」三個字左右兩側，高度錯開：星星偏上、音符偏下（位置對齊 page.tsx 標題區：手機文字中心約 128px、電腦約 148px）
 const FLANK: Deco[] = [
-  { kind: "star", color: "yellow", position: "left-[calc(50%-44px)] top-[128px] sm:top-[148px]", size: 17, rotate: -18, duration: 4.9, delay: 0.5 },
-  { kind: "note", color: "yellow", position: "left-[calc(50%+44px)] top-[128px] sm:top-[148px]", size: 22, rotate: -10, duration: 5.9, delay: 3.6 },
+  { kind: "star", color: "yellow", position: "left-[calc(50%-64px)] top-[118px] sm:top-[138px]", size: 17, rotate: -18, duration: 4.9, delay: 0.5 },
+  { kind: "note", color: "yellow", position: "left-[calc(50%+62px)] top-[146px] sm:top-[166px]", size: 22, rotate: -10, duration: 5.9, delay: 3.6 },
 ];
 
 // 行星周圍（% 相對於行星圖片的範圍，可超出去）
