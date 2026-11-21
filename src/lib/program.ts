@@ -24,6 +24,8 @@ export type ProgramItem = {
 export type Session = {
   key: "afternoon" | "evening";
   label: string;
+  /** 開始時間，例如 "12:30" */
+  startTime: string;
   items: ProgramItem[];
   /** 抓取失敗時為 true（顯示「節目表準備中」） */
   failed: boolean;
@@ -32,8 +34,8 @@ export type Session = {
 const PLANETS = ["水星", "金星", "地球", "火星", "木星", "土星", "天王星", "海王星", "冥王星"];
 
 const SESSIONS = [
-  { key: "afternoon", label: "午場", gidEnv: "SHEET_GID_AFTERNOON" },
-  { key: "evening", label: "晚場", gidEnv: "SHEET_GID_EVENING" },
+  { key: "afternoon", label: "午場", startTime: "12:30", gidEnv: "SHEET_GID_AFTERNOON" },
+  { key: "evening", label: "晚場", startTime: "16:30", gidEnv: "SHEET_GID_EVENING" },
 ] as const;
 
 function splitLines(value: string | undefined): string[] {
@@ -108,17 +110,17 @@ export async function getProgram(): Promise<Session[]> {
 
   const sheetId = process.env.SHEET_ID;
   return Promise.all(
-    SESSIONS.map(async ({ key, label, gidEnv }) => {
+    SESSIONS.map(async ({ key, label, startTime, gidEnv }) => {
       const gid = process.env[gidEnv];
       if (!sheetId || !gid) {
         console.error(`缺少環境變數 SHEET_ID 或 ${gidEnv}`);
-        return { key, label, items: [], failed: true };
+        return { key, label, startTime, items: [], failed: true };
       }
       try {
-        return { key, label, items: await fetchSheet(sheetId, gid), failed: false };
+        return { key, label, startTime, items: await fetchSheet(sheetId, gid), failed: false };
       } catch (err) {
         console.error(`${label}節目表讀取失敗`, err);
-        return { key, label, items: [], failed: true };
+        return { key, label, startTime, items: [], failed: true };
       }
     }),
   );

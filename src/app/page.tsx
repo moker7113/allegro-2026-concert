@@ -26,6 +26,15 @@ export default async function Home() {
           <h1 className="text-3xl font-bold text-white sm:text-4xl">一起找尋自己的行星</h1>
           <p className="mt-3 text-sm tracking-[0.3em] text-amber-200/80">2026樂果音樂會</p>
           <p className="mt-2 text-slate-400">節目表</p>
+          {/* mt-5：讓開「節目表」右下方的音符（Stars.tsx TitleStars） */}
+          <p className="mt-5 text-sm tracking-wider text-amber-200/90">
+            {sessions.map((s, i) => (
+              <span key={s.key}>
+                {i > 0 && <span aria-hidden className="mx-2 text-amber-200/40">｜</span>}
+                {s.label} {s.startTime} 開始
+              </span>
+            ))}
+          </p>
         </header>
         <ProgramViewer sessions={sessions} />
       </main>
