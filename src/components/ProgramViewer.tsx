@@ -123,6 +123,11 @@ function isOpening(item: ProgramItem): boolean {
   return item.code?.startsWith("開場") ?? false;
 }
 
+/** 搜尋比對的文字：演出者；開場節目再加上 G 欄分工名單（裡面有學生姓名） */
+function searchableNames(item: ProgramItem): string[] {
+  return isOpening(item) ? [...item.performers, ...item.teachers] : item.performers;
+}
+
 /** 頒獎、中場休息等流程：置中文字，兩側細線 */
 function InterludeDivider({ label }: { label: string }) {
   return (
@@ -167,12 +172,14 @@ function ItemCard({ row, query }: { row: Row; query: string }) {
       <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-400">
         {item.instruments.length > 0 && <span>{item.instruments.join("、")}</span>}
         {item.form && <span>{item.form}</span>}
-        {item.teachers.length > 0 && (
-          <span>
-            {!isOpening(item) && "指導老師："}
-            {item.teachers.join("、")}
-          </span>
-        )}
+        {item.teachers.length > 0 &&
+          (isOpening(item) ? (
+            <span>
+              <Highlight text={item.teachers.join("、")} query={query} />
+            </span>
+          ) : (
+            <span>指導老師：{item.teachers.join("、")}</span>
+          ))}
       </p>
     </li>
   );
@@ -222,7 +229,7 @@ function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
                   <Performers names={item.performers} query={query} />
                   {isOpening(item) && item.teachers.length > 0 && (
                     <span className="mt-1 block max-w-64 whitespace-normal text-xs font-normal text-slate-400">
-                      {item.teachers.join("、")}
+                      <Highlight text={item.teachers.join("、")} query={query} />
                     </span>
                   )}
                 </td>
@@ -271,7 +278,7 @@ export default function ProgramViewer({ sessions }: { sessions: Session[] }) {
   const rows: Row[] = query
     ? sessions.flatMap((s) =>
         s.items
-          .filter((item) => item.performers.some((name) => name.includes(query)))
+          .filter((item) => searchableNames(item).some((name) => name.includes(query)))
           .map((item) => ({ item, sessionLabel: s.label })),
       )
     : (session?.items ?? []).map((item) => ({ item }));
