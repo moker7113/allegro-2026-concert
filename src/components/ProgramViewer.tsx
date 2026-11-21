@@ -118,6 +118,11 @@ function Text({ value }: { value: string }) {
   return value ? <>{value}</> : <span className="text-slate-500">—</span>;
 }
 
+/** 開場節目不顯示指導老師 */
+function visibleTeachers(item: ProgramItem): string[] {
+  return item.code?.startsWith("開場") ? [] : item.teachers;
+}
+
 /** 頒獎、中場休息等流程：置中文字，兩側細線 */
 function InterludeDivider({ label }: { label: string }) {
   return (
@@ -162,7 +167,7 @@ function ItemCard({ row, query }: { row: Row; query: string }) {
       <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-400">
         {item.instruments.length > 0 && <span>{item.instruments.join("、")}</span>}
         {item.form && <span>{item.form}</span>}
-        {item.teachers.length > 0 && <span>指導老師：{item.teachers.join("、")}</span>}
+        {visibleTeachers(item).length > 0 && <span>指導老師：{visibleTeachers(item).join("、")}</span>}
       </p>
     </li>
   );
@@ -224,7 +229,7 @@ function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
                   <Text value={item.piece} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-slate-300">
-                  <Lines values={item.teachers} />
+                  <Lines values={visibleTeachers(item)} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <StatusBadge status={item.status} />
