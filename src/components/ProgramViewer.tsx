@@ -118,9 +118,9 @@ function Text({ value }: { value: string }) {
   return value ? <>{value}</> : <span className="text-slate-500">—</span>;
 }
 
-/** 開場節目不顯示指導老師 */
-function visibleTeachers(item: ProgramItem): string[] {
-  return item.code?.startsWith("開場") ? [] : item.teachers;
+/** 開場節目的 G 欄是分工名單，不加「指導老師」字樣（電腦版改放在演出者下面） */
+function isOpening(item: ProgramItem): boolean {
+  return item.code?.startsWith("開場") ?? false;
 }
 
 /** 頒獎、中場休息等流程：置中文字，兩側細線 */
@@ -167,7 +167,12 @@ function ItemCard({ row, query }: { row: Row; query: string }) {
       <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-400">
         {item.instruments.length > 0 && <span>{item.instruments.join("、")}</span>}
         {item.form && <span>{item.form}</span>}
-        {visibleTeachers(item).length > 0 && <span>指導老師：{visibleTeachers(item).join("、")}</span>}
+        {item.teachers.length > 0 && (
+          <span>
+            {!isOpening(item) && "指導老師："}
+            {item.teachers.join("、")}
+          </span>
+        )}
       </p>
     </li>
   );
@@ -215,6 +220,11 @@ function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 font-medium text-white">
                   <Performers names={item.performers} query={query} />
+                  {isOpening(item) && item.teachers.length > 0 && (
+                    <span className="mt-1 block max-w-64 whitespace-normal text-xs font-normal text-slate-400">
+                      {item.teachers.join("、")}
+                    </span>
+                  )}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-slate-300">
                   <Lines values={item.grades} />
@@ -229,7 +239,7 @@ function ItemTable({ rows, query }: { rows: Row[]; query: string }) {
                   <Text value={item.piece} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-slate-300">
-                  <Lines values={visibleTeachers(item)} />
+                  <Lines values={isOpening(item) ? [] : item.teachers} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <StatusBadge status={item.status} />
